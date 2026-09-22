@@ -96,43 +96,44 @@ html, body{
 }
 
 /* ---------- Prayer banner ---------- */
+/* Centered on the map itself (not just the top edge) and opaque white,
+   so it reads clearly on a phone, a laptop, or projected on a screen,
+   regardless of what's underneath it on the map. */
 #prayer-banner{
   position: absolute;
-  top: 18px; left: 50%;
-  transform: translateX(-50%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 460;
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  background: rgba(14,26,23,0.82);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--panel-border);
-  border-radius: 999px;
-  padding: 10px 24px;
-  box-shadow: var(--shadow);
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 26px 44px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
   transition: opacity 0.25s ease, transform 0.25s ease;
-  max-width: min(90vw, 640px);
+  max-width: min(88vw, 620px);
+  text-align: center;
+  pointer-events: none;
 }
 #prayer-banner.hidden{
   opacity: 0;
-  transform: translateX(-50%) translateY(-10px);
-  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.96);
 }
 .prayer-lead{
   font-family: var(--font-ui);
-  font-size: 14px;
-  color: var(--text-muted);
-  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6B7873;
 }
 .prayer-name{
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 26px;
-  line-height: 1.1;
-  color: var(--highlight);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 40px;
+  line-height: 1.15;
+  color: #16241F;
+  overflow-wrap: break-word;
 }
 
 /* ---------- Layers panel ---------- */
@@ -326,14 +327,11 @@ html, body{
   #masthead{ top: 12px; left: 12px; }
   #masthead h1{ font-size: 14.5px; }
   #prayer-banner{
-    padding: 8px 16px;
-    gap: 6px;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    padding: 18px 24px;
+    border-radius: 14px;
   }
-  .prayer-name{ font-size: 19px; white-space: normal; }
-  .prayer-lead{ font-size: 11px; }
+  .prayer-name{ font-size: 26px; }
+  .prayer-lead{ font-size: 12.5px; }
   #layers-panel{
     top: auto; bottom: 12px; left: 12px; right: 12px;
     width: auto;

@@ -24,6 +24,11 @@
     <h1>Kenya Counties <span class="joiner">&times;</span> World Continents</h1>
   </header>
 
+  <div id="prayer-banner" class="hidden" aria-live="polite">
+    <span class="prayer-lead">Praying for</span>
+    <span id="prayer-name" class="prayer-name"></span>
+  </div>
+
   <section id="layers-panel" aria-label="Layer controls">
     <label class="layer-row">
       <input type="checkbox" id="toggle-counties" checked />
@@ -38,14 +43,15 @@
       <span class="layer-count" id="count-continents"></span>
     </label>
 
-    <div class="divider"></div>
-
-    <label class="jump-row">
-      <span class="jump-label">Jump to a county</span>
-      <select id="county-jump">
-        <option value="">Select&hellip;</option>
-      </select>
-    </label>
+    <div id="jump-group">
+      <div class="divider"></div>
+      <label class="jump-row">
+        <span class="jump-label">Jump to a county</span>
+        <select id="county-jump">
+          <option value="">Select&hellip;</option>
+        </select>
+      </label>
+    </div>
   </section>
 
   <aside id="detail-panel" class="hidden" aria-live="polite">
@@ -55,7 +61,7 @@
     <dl id="detail-stats"></dl>
   </aside>
 
-  <p id="hint">Click a region to see details</p>
+  <p id="hint">Click a county or continent to begin praying for it</p>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/app.js"></script>

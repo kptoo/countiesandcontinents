@@ -12,7 +12,15 @@ const DATA_URLS = {
 // requests/month, no account needed. This key isn't a secret (it's served to
 // every visitor in the page source either way) — it just identifies your
 // usage against the free quota, so it's fine to commit as-is.
-const CARTO_API_KEY = "cb1_3trc_1_8ca6fe9392ca8689306a51e6";
+const CARTO_API_KEY = "PASTE_YOUR_CARTO_API_KEY_HERE";
+
+// Some browsers restore checkbox states from history on a reload without
+// firing a "change" event (e.g. after using the browser's back button or a
+// simple refresh). That can leave a checkbox showing unchecked while the
+// layer it controls is still on the map from the initial load below. Force
+// both to a known state up front so the checkboxes and the map always agree.
+document.getElementById("toggle-counties").checked = true;
+document.getElementById("toggle-continents").checked = true;
 
 const COLORS = {
   counties: "#E0A458",
@@ -77,6 +85,8 @@ function clearSelection() {
     selected = null;
   }
   document.getElementById("detail-panel").classList.add("hidden");
+  document.getElementById("prayer-banner").classList.add("hidden");
+  document.getElementById("masthead").classList.remove("hidden");
 }
 
 function selectFeature(layer, baseStyleFn, kicker, title, rows) {
@@ -109,6 +119,11 @@ function openPanel(kicker, title, rows) {
   });
   document.getElementById("detail-panel").classList.remove("hidden");
   document.getElementById("hint").classList.add("hidden");
+
+  // e.g. "Bomet county" or "Africa continent" — for display during prayer.
+  document.getElementById("prayer-name").textContent = `${title} ${kicker.toLowerCase()}`;
+  document.getElementById("prayer-banner").classList.remove("hidden");
+  document.getElementById("masthead").classList.add("hidden");
 }
 
 document.getElementById("panel-close").addEventListener("click", clearSelection);
@@ -184,6 +199,15 @@ function wireToggle(checkboxId, getLayer) {
 wireToggle("toggle-counties", () => countiesLayer);
 wireToggle("toggle-continents", () => continentsLayer);
 
+// The "jump to a county" control only makes sense while the counties layer
+// is actually visible — hide it otherwise so it can't imply counties are
+// showing when they're not.
+function syncJumpGroupVisibility() {
+  const on = document.getElementById("toggle-counties").checked;
+  document.getElementById("jump-group").classList.toggle("hidden", !on);
+}
+document.getElementById("toggle-counties").addEventListener("change", syncJumpGroupVisibility);
+
 // ---------------------------------------------------------------
 // Load data
 // ---------------------------------------------------------------
@@ -197,13 +221,19 @@ Promise.all([
       pane: "continentsPane",
       style: continentStyle,
       onEachFeature: onEachContinent
-    }).addTo(map);
-
+    });
     countiesLayer = L.geoJSON(countiesGeo, {
       pane: "countiesPane",
       style: countyStyle,
       onEachFeature: onEachCounty
-    }).addTo(map);
+    });
+
+    // Add each layer only if its checkbox actually says so, rather than
+    // assuming both start on — keeps the map truthful to the UI from the
+    // very first paint.
+    if (document.getElementById("toggle-continents").checked) map.addLayer(continentsLayer);
+    if (document.getElementById("toggle-counties").checked) map.addLayer(countiesLayer);
+    syncJumpGroupVisibility();
 
     document.getElementById("count-counties").textContent = countiesGeo.features.length;
     document.getElementById("count-continents").textContent = continentsGeo.features.length;

@@ -48,15 +48,9 @@
       <span class="layer-count" id="count-continents"></span>
     </label>
 
-    <div id="jump-group">
-      <div class="divider"></div>
-      <label class="jump-row">
-        <span class="jump-label">Jump to a county</span>
-        <select id="county-jump">
-          <option value="">Select&hellip;</option>
-        </select>
-      </label>
-    </div>
+    <div class="divider"></div>
+    <button type="button" class="list-toggle-btn" id="open-counties-list">Browse all counties</button>
+    <button type="button" class="list-toggle-btn" id="open-continents-list">Browse all continents</button>
 
     <div class="divider"></div>
     <label class="layer-row">
@@ -75,6 +69,32 @@
       <textarea id="verse-input" rows="3" placeholder="e.g. Philippians 4:6&#10;Be anxious for nothing…"></textarea>
     </label>
   </section>
+
+  <div class="list-panel hidden" id="counties-panel">
+    <div class="list-panel-header">
+      <span class="list-panel-drag" title="Drag to move">&vellip;&vellip;</span>
+      <span class="list-panel-title">Counties</span>
+      <span class="font-size-controls">
+        <button type="button" class="font-btn" data-panel="counties-panel" data-delta="-1" aria-label="Smaller text">A&minus;</button>
+        <button type="button" class="font-btn" data-panel="counties-panel" data-delta="1" aria-label="Larger text">A+</button>
+      </span>
+      <button type="button" class="list-panel-close" data-panel="counties-panel" aria-label="Close list">&times;</button>
+    </div>
+    <ul id="counties-list" class="feature-list"></ul>
+  </div>
+
+  <div class="list-panel hidden" id="continents-panel">
+    <div class="list-panel-header">
+      <span class="list-panel-drag" title="Drag to move">&vellip;&vellip;</span>
+      <span class="list-panel-title">Continents</span>
+      <span class="font-size-controls">
+        <button type="button" class="font-btn" data-panel="continents-panel" data-delta="-1" aria-label="Smaller text">A&minus;</button>
+        <button type="button" class="font-btn" data-panel="continents-panel" data-delta="1" aria-label="Larger text">A+</button>
+      </span>
+      <button type="button" class="list-panel-close" data-panel="continents-panel" aria-label="Close list">&times;</button>
+    </div>
+    <ul id="continents-list" class="feature-list"></ul>
+  </div>
 
   <aside id="detail-panel" class="hidden" aria-live="polite">
     <button id="panel-close" aria-label="Close">&times;</button>

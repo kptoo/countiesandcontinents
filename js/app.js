@@ -105,6 +105,15 @@ function updatePrayerDisplay() {
 document.getElementById("prayer-input").addEventListener("input", updatePrayerDisplay);
 document.getElementById("toggle-prayer").addEventListener("change", updatePrayerDisplay);
 
+// Marks the selected region's entry in whichever browsable list it belongs
+// to (counties or continents) with the same gold accent used to highlight
+// its shape on the map, and clears any other entry that was marked before.
+function highlightListItem(activeName) {
+  document.querySelectorAll(".feature-list button").forEach((btn) => {
+    btn.classList.toggle("active", activeName !== null && btn.textContent === activeName);
+  });
+}
+
 function clearSelection() {
   if (selected) {
     selected.layer.setStyle(selected.baseStyle);
@@ -113,6 +122,7 @@ function clearSelection() {
   document.getElementById("detail-panel").classList.add("hidden");
   document.getElementById("prayer-input").value = "";
   updatePrayerDisplay();
+  highlightListItem(null);
 }
 
 function selectFeature(layer, baseStyleFn, kicker, title, rows) {
@@ -150,6 +160,7 @@ function openPanel(kicker, title, rows) {
   // continent" — the banner itself only shows if #toggle-prayer is on.
   document.getElementById("prayer-input").value = `${title} ${kicker.toLowerCase()}`;
   updatePrayerDisplay();
+  highlightListItem(title);
 }
 
 // ---------------------------------------------------------------
@@ -237,14 +248,157 @@ function wireToggle(checkboxId, getLayer) {
 wireToggle("toggle-counties", () => countiesLayer);
 wireToggle("toggle-continents", () => continentsLayer);
 
-// The "jump to a county" control only makes sense while the counties layer
-// is actually visible — hide it otherwise so it can't imply counties are
-// showing when they're not.
-function syncJumpGroupVisibility() {
-  const on = document.getElementById("toggle-counties").checked;
-  document.getElementById("jump-group").classList.toggle("hidden", !on);
+// A browsable list only makes sense while its layer is actually visible —
+// hide its floating panel otherwise, so it can't imply a layer is showing
+// when it isn't.
+function syncListVisibility() {
+  if (!document.getElementById("toggle-counties").checked) {
+    document.getElementById("counties-panel").classList.add("hidden");
+  }
+  if (!document.getElementById("toggle-continents").checked) {
+    document.getElementById("continents-panel").classList.add("hidden");
+  }
 }
-document.getElementById("toggle-counties").addEventListener("change", syncJumpGroupVisibility);
+document.getElementById("toggle-counties").addEventListener("change", syncListVisibility);
+document.getElementById("toggle-continents").addEventListener("change", syncListVisibility);
+
+// Builds an alphabetical, clickable list of every feature in a layer (all
+// 47 counties, or all 8 continents) inside the given <ul>. Clicking a name
+// turns its layer on if needed and fires the same click handling a map
+// click would — selecting it, highlighting it, filling the prayer text,
+// and flying the map to it.
+function buildFeatureList(ulId, layer, nameProp, toggleId) {
+  const ul = document.getElementById(ulId);
+  const names = [];
+  layer.eachLayer((l) => names.push(l.feature.properties[nameProp]));
+  names.sort((a, b) => a.localeCompare(b));
+  names.forEach((name) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = name;
+    btn.addEventListener("click", () => {
+      const toggle = document.getElementById(toggleId);
+      if (!toggle.checked) {
+        toggle.checked = true;
+        toggle.dispatchEvent(new Event("change"));
+      }
+      let match;
+      layer.eachLayer((l) => {
+        if (l.feature.properties[nameProp] === name) match = l;
+      });
+      if (match) match.fire("click");
+    });
+    li.appendChild(btn);
+    ul.appendChild(li);
+  });
+}
+
+// ---------------------------------------------------------------
+// Floating county/continent list panels — open/close, drag, and
+// per-panel text size.
+// ---------------------------------------------------------------
+
+// Keeps a panel fully on screen, whether it's just been opened or is
+// about to be dragged past an edge.
+function clampToViewport(panel) {
+  const margin = 6;
+  const rect = panel.getBoundingClientRect();
+  const maxLeft = Math.max(margin, window.innerWidth - rect.width - margin);
+  const maxTop = Math.max(margin, window.innerHeight - rect.height - margin);
+  const left = Math.min(Math.max(rect.left, margin), maxLeft);
+  const top = Math.min(Math.max(rect.top, margin), maxTop);
+  panel.style.right = "auto";
+  panel.style.bottom = "auto";
+  panel.style.left = `${left}px`;
+  panel.style.top = `${top}px`;
+}
+
+function wireListOpenButton(btnId, panelId, toggleId) {
+  document.getElementById(btnId).addEventListener("click", () => {
+    const panel = document.getElementById(panelId);
+    const opening = panel.classList.contains("hidden");
+    if (!opening) {
+      panel.classList.add("hidden");
+      return;
+    }
+    const toggle = document.getElementById(toggleId);
+    if (!toggle.checked) {
+      toggle.checked = true;
+      toggle.dispatchEvent(new Event("change"));
+    }
+    panel.classList.remove("hidden");
+    clampToViewport(panel);
+  });
+}
+wireListOpenButton("open-counties-list", "counties-panel", "toggle-counties");
+wireListOpenButton("open-continents-list", "continents-panel", "toggle-continents");
+
+document.querySelectorAll(".list-panel-close").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.getElementById(btn.dataset.panel).classList.add("hidden");
+  });
+});
+
+// Drag a panel by its handle. Pointer events cover mouse, touch, and pen
+// in one code path, and pointer capture keeps the drag going even if the
+// pointer moves faster than the panel and briefly leaves the handle.
+function makeDraggable(panel, handle) {
+  let dragging = false;
+  let startX, startY, startLeft, startTop, panelW, panelH;
+
+  handle.addEventListener("pointerdown", (e) => {
+    dragging = true;
+    handle.setPointerCapture(e.pointerId);
+    const rect = panel.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+    startLeft = rect.left;
+    startTop = rect.top;
+    panelW = rect.width;
+    panelH = rect.height;
+    panel.style.right = "auto";
+    panel.style.bottom = "auto";
+    e.preventDefault();
+  });
+
+  handle.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const margin = 6;
+    const maxLeft = Math.max(margin, window.innerWidth - panelW - margin);
+    const maxTop = Math.max(margin, window.innerHeight - panelH - margin);
+    const left = Math.min(Math.max(startLeft + (e.clientX - startX), margin), maxLeft);
+    const top = Math.min(Math.max(startTop + (e.clientY - startY), margin), maxTop);
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+  });
+
+  const endDrag = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    try { handle.releasePointerCapture(e.pointerId); } catch (err) { /* already released */ }
+  };
+  handle.addEventListener("pointerup", endDrag);
+  handle.addEventListener("pointercancel", endDrag);
+}
+document.querySelectorAll(".list-panel").forEach((panel) => {
+  makeDraggable(panel, panel.querySelector(".list-panel-drag"));
+});
+
+// Each panel's text size is independent (counties and continents can be
+// sized differently) and lives on the <ul> itself, so every button in it
+// just inherits the current size.
+function adjustFontSize(panelId, delta) {
+  const list = document.querySelector(`#${panelId} .feature-list`);
+  const current = parseFloat(getComputedStyle(list).fontSize);
+  const next = Math.min(22, Math.max(11, current + delta * 1.5));
+  list.style.fontSize = `${next}px`;
+}
+document.querySelectorAll(".font-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    adjustFontSize(btn.dataset.panel, parseInt(btn.dataset.delta, 10));
+  });
+});
 
 // ---------------------------------------------------------------
 // Load data
@@ -271,38 +425,13 @@ Promise.all([
     // very first paint.
     if (document.getElementById("toggle-continents").checked) map.addLayer(continentsLayer);
     if (document.getElementById("toggle-counties").checked) map.addLayer(countiesLayer);
-    syncJumpGroupVisibility();
+    syncListVisibility();
 
     document.getElementById("count-counties").textContent = countiesGeo.features.length;
     document.getElementById("count-continents").textContent = continentsGeo.features.length;
 
-    // County quick-jump
-    const select = document.getElementById("county-jump");
-    const names = countiesGeo.features
-      .map((f) => f.properties.COUNTY)
-      .sort((a, b) => a.localeCompare(b));
-    names.forEach((name) => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      select.appendChild(opt);
-    });
-    select.addEventListener("change", (e) => {
-      const name = e.target.value;
-      if (!name) return;
-      let match;
-      countiesLayer.eachLayer((l) => {
-        if (l.feature.properties.COUNTY === name) match = l;
-      });
-      if (match) {
-        if (!document.getElementById("toggle-counties").checked) {
-          document.getElementById("toggle-counties").checked = true;
-          map.addLayer(countiesLayer);
-        }
-        match.fire("click");
-      }
-      select.value = "";
-    });
+    buildFeatureList("counties-list", countiesLayer, "COUNTY", "toggle-counties");
+    buildFeatureList("continents-list", continentsLayer, "CONTINENT", "toggle-continents");
 
     document.getElementById("loading").style.display = "none";
   })

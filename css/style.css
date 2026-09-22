@@ -154,7 +154,7 @@ html, body{
   font-weight: 500;
   font-size: 21px;
   line-height: 1.45;
-  color: #040273;
+  color: #1B4B91;
   white-space: pre-line;
   overflow-wrap: break-word;
 }
@@ -171,6 +171,8 @@ html, body{
   box-shadow: var(--shadow);
   padding: 12px 14px;
   width: 222px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
 }
 .layer-row{
   display: flex;
@@ -232,27 +234,143 @@ html, body{
   margin: 10px 0;
 }
 
-#jump-group.hidden{ display: none; }
+/* Buttons in the main panel that open the floating county/continent lists. */
+.list-toggle-btn{
+  all: unset;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 3px 0;
+  padding: 7px 9px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  color: var(--text);
+  cursor: pointer;
+}
+.list-toggle-btn:hover{ background: rgba(255,255,255,0.09); }
+.list-toggle-btn:focus-visible{
+  outline: 2px solid var(--highlight);
+  outline-offset: 1px;
+}
+
+/* ---------- Floating, draggable county/continent lists ---------- */
+.list-panel{
+  position: absolute;
+  z-index: 470;
+  width: 200px;
+  max-width: min(70vw, 230px);
+  max-height: min(60vh, 360px);
+  background: rgba(22,36,31,0.96);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.list-panel.hidden{ display: none; }
+#counties-panel{ top: 78px; left: 250px; }
+#continents-panel{ top: 78px; left: 462px; }
+
+.list-panel-header{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--panel-border);
+  background: rgba(255,255,255,0.03);
+  flex: none;
+}
+.list-panel-drag{
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: -2px;
+  line-height: 1;
+  touch-action: none;
+  user-select: none;
+  padding: 2px 3px;
+}
+.list-panel-drag:active{ cursor: grabbing; }
+.list-panel-title{
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.font-size-controls{ display: flex; gap: 2px; flex: none; }
+.font-btn{
+  all: unset;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.07);
+  border-radius: 4px;
+  padding: 3px 6px;
+  line-height: 1;
+}
+.font-btn:hover{ color: var(--text); background: rgba(255,255,255,0.14); }
+.font-btn:focus-visible{ outline: 2px solid var(--highlight); outline-offset: 1px; }
+.list-panel-close{
+  all: unset;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 1px 3px;
+  flex: none;
+}
+.list-panel-close:hover{ color: var(--text); }
+
+.feature-list{
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  font-size: 12.5px; /* baseline — adjusted live by the A−/A+ buttons */
+  scrollbar-width: thin;
+  scrollbar-color: var(--panel-border) transparent;
+}
+.feature-list::-webkit-scrollbar{ width: 6px; }
+.feature-list::-webkit-scrollbar-thumb{ background: var(--panel-border); border-radius: 3px; }
+.feature-list li{ margin: 0; }
+.feature-list button{
+  all: unset;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-family: var(--font-ui);
+  color: var(--text);
+  cursor: pointer;
+}
+.feature-list button:hover{ background: rgba(237,231,217,0.08); }
+.feature-list button:focus-visible{
+  outline: 2px solid var(--highlight);
+  outline-offset: -2px;
+}
+/* The currently selected region, highlighted in its list — same accent
+   used for the highlighted shape on the map itself. */
+.feature-list button.active{
+  background: var(--highlight);
+  color: var(--ink);
+  font-weight: 600;
+}
+.feature-list button.active:hover{ background: var(--highlight); }
+
 .jump-row{ display: block; }
 .jump-label{
   display: block;
   font-size: 11px;
   color: var(--text-muted);
   margin-bottom: 5px;
-}
-#county-jump{
-  width: 100%;
-  background: #0F1D19;
-  color: var(--text);
-  border: 1px solid var(--panel-border);
-  border-radius: 6px;
-  padding: 7px 8px;
-  font-family: var(--font-ui);
-  font-size: 13px;
-}
-#county-jump:focus-visible{
-  outline: 2px solid var(--highlight);
-  outline-offset: 1px;
 }
 #prayer-input{
   width: 100%;
@@ -394,12 +512,18 @@ html, body{
   #layers-panel{
     top: auto; bottom: 12px; left: 12px; right: 12px;
     width: auto;
+    max-height: 50vh;
   }
   #detail-panel{
     left: 12px; right: 12px; bottom: 12px; top: auto;
     width: auto;
   }
   #hint{ display: none; }
+  #counties-panel,
+  #continents-panel{
+    top: 78px; left: 12px;
+    max-width: 78vw;
+  }
 }
 
 @media (prefers-reduced-motion: reduce){

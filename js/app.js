@@ -35,6 +35,15 @@ const COLORS = {
   highlight: "#F2C744",
   hover: "#EDE7D9"
 };
+// Shared between both engines now that both sit on a real basemap: a light
+// tint over real tiles reads better than the deeper fill used previously,
+// when the globe's fill color WAS the only "land" there was.
+const FILL_OPACITY = { county: 0.18, continent: 0.12, selected: 0.4 };
+
+// Which basemap is active, shared by both engines. CARTO needs the key
+// above; OpenStreetMap's standard tiles need no key at all, so it's the
+// zero-setup fallback if a key hasn't been filled in yet.
+let currentBasemap = "carto"; // "carto" | "osm"
 
 // ---------------------------------------------------------------
 // 2D map (Leaflet)
@@ -49,13 +58,23 @@ const map = L.map("map", {
 
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
-L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`, {
+// Both tile layers are created up front; only one is ever added to the map
+// at a time (see setBasemap below). Leaflet's attribution control tracks
+// whatever's currently added automatically, so it updates itself when the
+// basemap is switched — nothing else to wire up for that.
+const cartoTiles = L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`, {
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
     '&copy; <a href="https://carto.com/attributions">CARTO</a>',
   subdomains: "abcd",
   maxZoom: 19
-}).addTo(map);
+});
+const osmTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  subdomains: "abc",
+  maxZoom: 19
+});
+cartoTiles.addTo(map);
 
 // Two panes so Kenya's counties always draw above the continent fills,
 // and so a click on a county never also triggers the continent below it.
@@ -125,13 +144,13 @@ globeMap.on("load", () => {
 // ---------------------------------------------------------------
 
 function countyStyle() {
-  return { color: COLORS.counties, weight: 1.2, fillColor: COLORS.counties, fillOpacity: 0.18, opacity: 0.9 };
+  return { color: COLORS.counties, weight: 1.2, fillColor: COLORS.counties, fillOpacity: FILL_OPACITY.county, opacity: 0.9 };
 }
 function continentStyle() {
-  return { color: COLORS.continents, weight: 1, fillColor: COLORS.continents, fillOpacity: 0.12, opacity: 0.7 };
+  return { color: COLORS.continents, weight: 1, fillColor: COLORS.continents, fillOpacity: FILL_OPACITY.continent, opacity: 0.7 };
 }
 function highlightStyle(base) {
-  return Object.assign({}, base, { weight: 3, color: COLORS.highlight, fillOpacity: 0.4, opacity: 1 });
+  return Object.assign({}, base, { weight: 3, color: COLORS.highlight, fillOpacity: FILL_OPACITY.selected, opacity: 1 });
 }
 
 // ---------------------------------------------------------------
@@ -548,6 +567,33 @@ document.getElementById("view-flat").addEventListener("click", () => setView("fl
 document.getElementById("view-globe").addEventListener("click", () => setView("globe"));
 
 // ---------------------------------------------------------------
+// Basemap switch — CARTO (needs the API key above) or OpenStreetMap's
+// standard tiles (no key needed at all). Applies to both engines at once,
+// since it's one "which tiles" choice rather than a per-view setting.
+// ---------------------------------------------------------------
+
+function setBasemap(name) {
+  currentBasemap = name;
+  document.getElementById("basemap-carto").classList.toggle("active", name === "carto");
+  document.getElementById("basemap-osm").classList.toggle("active", name === "osm");
+
+  if (name === "osm") {
+    if (map.hasLayer(cartoTiles)) map.removeLayer(cartoTiles);
+    if (!map.hasLayer(osmTiles)) osmTiles.addTo(map);
+  } else {
+    if (map.hasLayer(osmTiles)) map.removeLayer(osmTiles);
+    if (!map.hasLayer(cartoTiles)) cartoTiles.addTo(map);
+  }
+
+  if (globeMap.getLayer("basemap-carto") && globeMap.getLayer("basemap-osm")) {
+    globeMap.setLayoutProperty("basemap-carto", "visibility", name === "carto" ? "visible" : "none");
+    globeMap.setLayoutProperty("basemap-osm", "visibility", name === "osm" ? "visible" : "none");
+  }
+}
+document.getElementById("basemap-carto").addEventListener("click", () => setBasemap("carto"));
+document.getElementById("basemap-osm").addEventListener("click", () => setBasemap("osm"));
+
+// ---------------------------------------------------------------
 // A rough bounding-box center/zoom for a GeoJSON geometry, used to fly the
 // globe to a region. Approximate rather than a true centroid — plenty for
 // framing a shape, not meant for precise measurement. Note: this doesn't
@@ -582,7 +628,43 @@ function bboxCenterZoom(geometry) {
 // click routing, and hover cursor.
 // ---------------------------------------------------------------
 
+// Builds a MapLibre raster "tiles" array from a URL template that uses
+// Leaflet-style {s} for subdomains — MapLibre doesn't expand {s} itself,
+// so each subdomain gets spelled out as its own explicit URL and MapLibre
+// round-robins between them, same effect as Leaflet's subdomain sharding.
+function subdomainTiles(template, subdomains) {
+  return subdomains.split("").map((s) => template.replace("{s}", s));
+}
+
 function setupGlobeLayers(countiesGeo, continentsGeo) {
+  // Real basemap imagery for the globe, same two providers as the 2D map,
+  // switched together with it via setBasemap(). Placed right after the
+  // background so the county/continent layers below always draw on top.
+  globeMap.addSource("basemap-carto-src", {
+    type: "raster",
+    tiles: subdomainTiles(`https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png?key=${CARTO_API_KEY}`, "abcd"),
+    tileSize: 256,
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+  });
+  globeMap.addSource("basemap-osm-src", {
+    type: "raster",
+    tiles: subdomainTiles("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", "abc"),
+    tileSize: 256,
+    attribution: "&copy; OpenStreetMap contributors"
+  });
+  globeMap.addLayer({
+    id: "basemap-carto",
+    type: "raster",
+    source: "basemap-carto-src",
+    layout: { visibility: currentBasemap === "carto" ? "visible" : "none" }
+  });
+  globeMap.addLayer({
+    id: "basemap-osm",
+    type: "raster",
+    source: "basemap-osm-src",
+    layout: { visibility: currentBasemap === "osm" ? "visible" : "none" }
+  });
+
   globeMap.addSource("continents", { type: "geojson", data: continentsGeo, generateId: true });
   globeMap.addSource("counties", { type: "geojson", data: countiesGeo, generateId: true });
 
@@ -595,7 +677,7 @@ function setupGlobeLayers(countiesGeo, continentsGeo) {
     source: "continents",
     paint: {
       "fill-color": selExpr(COLORS.highlight, COLORS.continents),
-      "fill-opacity": selExpr(0.55, 0.28)
+      "fill-opacity": selExpr(FILL_OPACITY.selected, FILL_OPACITY.continent)
     }
   });
   globeMap.addLayer({
@@ -613,7 +695,7 @@ function setupGlobeLayers(countiesGeo, continentsGeo) {
     source: "counties",
     paint: {
       "fill-color": selExpr(COLORS.highlight, COLORS.counties),
-      "fill-opacity": selExpr(0.65, 0.35)
+      "fill-opacity": selExpr(FILL_OPACITY.selected, FILL_OPACITY.county)
     }
   });
   globeMap.addLayer({

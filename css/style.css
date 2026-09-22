@@ -72,7 +72,8 @@ html, body{
 .maplibregl-ctrl-attrib a{ color: var(--text-muted) !important; }
 
 /* ---------- 2D / 3D view switch ---------- */
-#view-toggle{
+#view-toggle,
+#basemap-toggle{
   position: absolute;
   top: 18px; right: 18px;
   z-index: 450;
@@ -85,6 +86,7 @@ html, body{
   gap: 2px;
   box-shadow: var(--shadow);
 }
+#basemap-toggle{ top: 60px; }
 .view-btn{
   all: unset;
   cursor: pointer;
@@ -560,6 +562,7 @@ html, body{
   #masthead{ top: 12px; left: 12px; max-width: 58vw; }
   #masthead h1{ font-size: 13px; }
   #view-toggle{ top: 12px; right: 12px; }
+  #basemap-toggle{ top: 46px; right: 12px; }
   .view-btn{ font-size: 11px; padding: 5px 9px; }
   #focus-stack{
     gap: 8px;

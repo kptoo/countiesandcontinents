@@ -95,11 +95,12 @@ html, body{
   pointer-events: none;
 }
 
-/* ---------- Focus stack: prayer banner + verse, centered on the map ---------- */
-/* Both cards are opaque white so they read clearly on a phone, a laptop, or
-   projected on a screen, regardless of what's underneath on the map. They
-   stack in this shared, centered container so either one (or both) can show
-   without leaving a gap or overlapping the other. */
+/* ---------- Focus stack: prayer banner + verse, one shared card ---------- */
+/* A single opaque white card, centered on the map, so it reads clearly on a
+   phone, a laptop, or projected on a screen regardless of what's underneath.
+   The prayer line and the verse are independent inner blocks — either can
+   show alone, and the card itself disappears when both are empty — but
+   visually they read as one card, not two stacked boxes. */
 #focus-stack{
   position: absolute;
   top: 50%; left: 50%;
@@ -108,31 +109,35 @@ html, body{
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   pointer-events: none;
-  max-width: 88vw;
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 18px 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  text-align: center;
+  max-width: min(85vw, 560px);
 }
+#focus-stack.hidden{ display: none; }
 
 #prayer-banner,
 #verse-banner{
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #FFFFFF;
-  border-radius: 14px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-  text-align: center;
 }
 #prayer-banner.hidden,
 #verse-banner.hidden{
   display: none;
 }
+#prayer-banner{ gap: 4px; }
 
-#prayer-banner{
-  gap: 4px;
-  padding: 16px 30px;
-  max-width: min(80vw, 480px);
+/* A thin rule between the two, but only when both are actually showing. */
+#prayer-banner:not(.hidden) + #verse-banner:not(.hidden){
+  border-top: 1px solid #E7E2D6;
+  padding-top: 10px;
 }
+
 .prayer-lead{
   font-family: var(--font-ui);
   font-size: 13px;
@@ -146,11 +151,6 @@ html, body{
   line-height: 1.15;
   color: #16241F;
   overflow-wrap: break-word;
-}
-
-#verse-banner{
-  padding: 18px 30px;
-  max-width: min(85vw, 560px);
 }
 #verse-text{
   margin: 0;
@@ -371,9 +371,8 @@ html, body{
 @media (max-width: 640px){
   #masthead{ top: 12px; left: 12px; }
   #masthead h1{ font-size: 14.5px; }
-  #focus-stack{ gap: 8px; }
-  #prayer-banner,
-  #verse-banner{
+  #focus-stack{
+    gap: 8px;
     padding: 12px 18px;
     border-radius: 12px;
   }

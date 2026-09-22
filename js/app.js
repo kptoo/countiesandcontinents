@@ -12,7 +12,7 @@ const DATA_URLS = {
 // requests/month, no account needed. This key isn't a secret (it's served to
 // every visitor in the page source either way) — it just identifies your
 // usage against the free quota, so it's fine to commit as-is.
-const CARTO_API_KEY = "cb1_3trc_1_8ca6fe9392ca8689306a51e6";
+const CARTO_API_KEY = "PASTE_YOUR_CARTO_API_KEY_HERE";
 
 // Some browsers restore checkbox states from history on a reload without
 // firing a "change" event (e.g. after using the browser's back button or a
@@ -79,12 +79,14 @@ function highlightStyle(base) {
 let selected = null; // { layer, baseStyle }
 let countiesLayer, continentsLayer;
 
-// The masthead steps aside whenever the prayer banner or the verse is on
-// screen, so the center of attention during a service isn't competing with
-// the app's own small branding label.
-function updateMastheadVisibility() {
+// The shared card shows itself whenever the prayer line or the verse (or
+// both) have content, and hides itself when neither does. The masthead
+// steps aside at the same time, so the center of attention during a
+// service isn't competing with the app's own small branding label.
+function updateFocusStack() {
   const prayerShown = !document.getElementById("prayer-banner").classList.contains("hidden");
   const verseShown = !document.getElementById("verse-banner").classList.contains("hidden");
+  document.getElementById("focus-stack").classList.toggle("hidden", !(prayerShown || verseShown));
   document.getElementById("masthead").classList.toggle("hidden", prayerShown || verseShown);
 }
 
@@ -95,7 +97,7 @@ function clearSelection() {
   }
   document.getElementById("detail-panel").classList.add("hidden");
   document.getElementById("prayer-banner").classList.add("hidden");
-  updateMastheadVisibility();
+  updateFocusStack();
 }
 
 function selectFeature(layer, baseStyleFn, kicker, title, rows) {
@@ -132,7 +134,7 @@ function openPanel(kicker, title, rows) {
   // e.g. "Bomet county" or "Africa continent" — for display during prayer.
   document.getElementById("prayer-name").textContent = `${title} ${kicker.toLowerCase()}`;
   document.getElementById("prayer-banner").classList.remove("hidden");
-  updateMastheadVisibility();
+  updateFocusStack();
 }
 
 // ---------------------------------------------------------------
@@ -144,7 +146,7 @@ document.getElementById("verse-input").addEventListener("input", (e) => {
   const text = e.target.value;
   document.getElementById("verse-text").textContent = text;
   document.getElementById("verse-banner").classList.toggle("hidden", text.trim().length === 0);
-  updateMastheadVisibility();
+  updateFocusStack();
 });
 
 document.getElementById("panel-close").addEventListener("click", clearSelection);

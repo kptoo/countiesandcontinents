@@ -1,0 +1,296 @@
+:root{
+  --ink: #0E1A17;
+  --panel: #16241F;
+  --panel-border: #2A3A34;
+  --text: #EDE7D9;
+  --text-muted: #8FA39A;
+  --counties: #E0A458;
+  --continents: #5B8FC7;
+  --highlight: #F2C744;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-ui: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius: 10px;
+  --shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  height: 100%;
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+
+#map{
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+}
+
+/* Leaflet control tweaks to match the theme */
+.leaflet-control-zoom a{
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  border-color: var(--panel-border) !important;
+}
+.leaflet-control-zoom a:hover{ background: #1E322B !important; }
+.leaflet-control-attribution{
+  background: rgba(14,26,23,0.75) !important;
+  color: var(--text-muted) !important;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+}
+.leaflet-control-attribution a{ color: var(--text-muted); }
+
+/* ---------- Loading ---------- */
+#loading{
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-ui);
+  color: var(--text-muted);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  z-index: 500;
+  pointer-events: none;
+}
+
+/* ---------- Masthead ---------- */
+#masthead{
+  position: absolute;
+  top: 18px; left: 18px;
+  z-index: 450;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+#masthead .mark{
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--counties), var(--continents));
+  flex: none;
+}
+#masthead h1{
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 17px;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text);
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+}
+#masthead .joiner{
+  color: var(--text-muted);
+  font-weight: 300;
+  padding: 0 1px;
+}
+
+/* ---------- Layers panel ---------- */
+#layers-panel{
+  position: absolute;
+  top: 62px; left: 18px;
+  z-index: 450;
+  background: rgba(22,36,31,0.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  width: 222px;
+}
+.layer-row{
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 2px;
+  cursor: pointer;
+  user-select: none;
+}
+.layer-row input[type="checkbox"]{
+  appearance: none;
+  width: 15px; height: 15px;
+  border: 1.5px solid var(--text-muted);
+  border-radius: 4px;
+  margin: 0;
+  position: relative;
+  cursor: pointer;
+  flex: none;
+}
+.layer-row input[type="checkbox"]:checked{
+  background: var(--text);
+  border-color: var(--text);
+}
+.layer-row input[type="checkbox"]:checked::after{
+  content: "";
+  position: absolute;
+  left: 4px; top: 1px;
+  width: 4px; height: 8px;
+  border: solid var(--ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.layer-row input[type="checkbox"]:focus-visible{
+  outline: 2px solid var(--highlight);
+  outline-offset: 2px;
+}
+.swatch{
+  width: 11px; height: 11px;
+  border-radius: 3px;
+  flex: none;
+  opacity: 0.9;
+}
+.swatch-counties{ background: var(--counties); }
+.swatch-continents{ background: var(--continents); }
+.layer-name{
+  font-size: 13.5px;
+  flex: 1;
+}
+.layer-count{
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.divider{
+  height: 1px;
+  background: var(--panel-border);
+  margin: 10px 0;
+}
+
+.jump-row{ display: block; }
+.jump-label{
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+#county-jump{
+  width: 100%;
+  background: #0F1D19;
+  color: var(--text);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 7px 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+#county-jump:focus-visible{
+  outline: 2px solid var(--highlight);
+  outline-offset: 1px;
+}
+
+/* ---------- Detail panel ---------- */
+#detail-panel{
+  position: absolute;
+  right: 18px; bottom: 18px;
+  z-index: 450;
+  background: rgba(22,36,31,0.94);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  width: 240px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+#detail-panel.hidden{
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+#panel-close{
+  position: absolute;
+  top: 10px; right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+}
+#panel-close:hover{ color: var(--text); }
+.detail-kicker{
+  margin: 0 0 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+#detail-title{
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 22px;
+  margin: 0 0 10px;
+  line-height: 1.15;
+  padding-right: 18px;
+}
+#detail-stats{
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+}
+#detail-stats dt{
+  color: var(--text-muted);
+  font-size: 12px;
+}
+#detail-stats dd{
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  text-align: right;
+}
+
+/* ---------- Hint ---------- */
+#hint{
+  position: absolute;
+  left: 50%; bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 440;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(22,36,31,0.75);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-border);
+  pointer-events: none;
+}
+#hint.hidden{ display: none; }
+
+/* ---------- Tooltips ---------- */
+.leaflet-tooltip.tt{
+  background: rgba(22,36,31,0.95);
+  color: var(--text);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 4px 9px;
+  box-shadow: var(--shadow);
+}
+.leaflet-tooltip.tt::before{ display: none; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px){
+  #masthead{ top: 12px; left: 12px; }
+  #masthead h1{ font-size: 14.5px; }
+  #layers-panel{
+    top: auto; bottom: 12px; left: 12px; right: 12px;
+    width: auto;
+  }
+  #detail-panel{
+    left: 12px; right: 12px; bottom: 12px; top: auto;
+    width: auto;
+  }
+  #hint{ display: none; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  #detail-panel{ transition: none; }
+}

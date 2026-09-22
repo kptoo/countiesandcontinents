@@ -95,11 +95,12 @@ html, body{
   pointer-events: none;
 }
 
-/* ---------- Prayer banner ---------- */
-/* Centered on the map itself (not just the top edge) and opaque white,
-   so it reads clearly on a phone, a laptop, or projected on a screen,
-   regardless of what's underneath it on the map. */
-#prayer-banner{
+/* ---------- Focus stack: prayer banner + verse, centered on the map ---------- */
+/* Both cards are opaque white so they read clearly on a phone, a laptop, or
+   projected on a screen, regardless of what's underneath on the map. They
+   stack in this shared, centered container so either one (or both) can show
+   without leaving a gap or overlapping the other. */
+#focus-stack{
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -107,19 +108,30 @@ html, body{
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
+  pointer-events: none;
+  max-width: 88vw;
+}
+
+#prayer-banner,
+#verse-banner{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background: #FFFFFF;
   border-radius: 14px;
-  padding: 16px 30px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  max-width: min(80vw, 480px);
   text-align: center;
-  pointer-events: none;
 }
-#prayer-banner.hidden{
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.96);
+#prayer-banner.hidden,
+#verse-banner.hidden{
+  display: none;
+}
+
+#prayer-banner{
+  gap: 4px;
+  padding: 16px 30px;
+  max-width: min(80vw, 480px);
 }
 .prayer-lead{
   font-family: var(--font-ui);
@@ -133,6 +145,22 @@ html, body{
   font-size: 28px;
   line-height: 1.15;
   color: #16241F;
+  overflow-wrap: break-word;
+}
+
+#verse-banner{
+  padding: 18px 30px;
+  max-width: min(85vw, 560px);
+}
+#verse-text{
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 21px;
+  line-height: 1.45;
+  color: #16241F;
+  white-space: pre-line;
   overflow-wrap: break-word;
 }
 
@@ -227,6 +255,23 @@ html, body{
   font-size: 13px;
 }
 #county-jump:focus-visible{
+  outline: 2px solid var(--highlight);
+  outline-offset: 1px;
+}
+#verse-input{
+  width: 100%;
+  resize: vertical;
+  background: #0F1D19;
+  color: var(--text);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 7px 8px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+#verse-input::placeholder{ color: var(--text-muted); }
+#verse-input:focus-visible{
   outline: 2px solid var(--highlight);
   outline-offset: 1px;
 }
@@ -326,12 +371,15 @@ html, body{
 @media (max-width: 640px){
   #masthead{ top: 12px; left: 12px; }
   #masthead h1{ font-size: 14.5px; }
-  #prayer-banner{
+  #focus-stack{ gap: 8px; }
+  #prayer-banner,
+  #verse-banner{
     padding: 12px 18px;
     border-radius: 12px;
   }
   .prayer-name{ font-size: 19px; }
   .prayer-lead{ font-size: 11px; }
+  #verse-text{ font-size: 15px; }
   #layers-panel{
     top: auto; bottom: 12px; left: 12px; right: 12px;
     width: auto;

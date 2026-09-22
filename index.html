@@ -24,9 +24,14 @@
     <h1>Kenya Counties <span class="joiner">&times;</span> World Continents</h1>
   </header>
 
-  <div id="prayer-banner" class="hidden" aria-live="polite">
-    <span class="prayer-lead">Praying for</span>
-    <span id="prayer-name" class="prayer-name"></span>
+  <div id="focus-stack">
+    <div id="prayer-banner" class="hidden" aria-live="polite">
+      <span class="prayer-lead">Praying for</span>
+      <span id="prayer-name" class="prayer-name"></span>
+    </div>
+    <div id="verse-banner" class="hidden" aria-live="polite">
+      <p id="verse-text"></p>
+    </div>
   </div>
 
   <section id="layers-panel" aria-label="Layer controls">
@@ -52,6 +57,12 @@
         </select>
       </label>
     </div>
+
+    <div class="divider"></div>
+    <label class="jump-row">
+      <span class="jump-label">Bible verse — shown live as you type</span>
+      <textarea id="verse-input" rows="3" placeholder="e.g. Philippians 4:6&#10;Be anxious for nothing…"></textarea>
+    </label>
   </section>
 
   <aside id="detail-panel" class="hidden" aria-live="polite">

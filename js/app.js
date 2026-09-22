@@ -79,6 +79,15 @@ function highlightStyle(base) {
 let selected = null; // { layer, baseStyle }
 let countiesLayer, continentsLayer;
 
+// The masthead steps aside whenever the prayer banner or the verse is on
+// screen, so the center of attention during a service isn't competing with
+// the app's own small branding label.
+function updateMastheadVisibility() {
+  const prayerShown = !document.getElementById("prayer-banner").classList.contains("hidden");
+  const verseShown = !document.getElementById("verse-banner").classList.contains("hidden");
+  document.getElementById("masthead").classList.toggle("hidden", prayerShown || verseShown);
+}
+
 function clearSelection() {
   if (selected) {
     selected.layer.setStyle(selected.baseStyle);
@@ -86,7 +95,7 @@ function clearSelection() {
   }
   document.getElementById("detail-panel").classList.add("hidden");
   document.getElementById("prayer-banner").classList.add("hidden");
-  document.getElementById("masthead").classList.remove("hidden");
+  updateMastheadVisibility();
 }
 
 function selectFeature(layer, baseStyleFn, kicker, title, rows) {
@@ -123,8 +132,20 @@ function openPanel(kicker, title, rows) {
   // e.g. "Bomet county" or "Africa continent" — for display during prayer.
   document.getElementById("prayer-name").textContent = `${title} ${kicker.toLowerCase()}`;
   document.getElementById("prayer-banner").classList.remove("hidden");
-  document.getElementById("masthead").classList.add("hidden");
+  updateMastheadVisibility();
 }
+
+// ---------------------------------------------------------------
+// Bible verse — shown live as it's typed, independent of any
+// county/continent selection so it can be shown on its own.
+// ---------------------------------------------------------------
+
+document.getElementById("verse-input").addEventListener("input", (e) => {
+  const text = e.target.value;
+  document.getElementById("verse-text").textContent = text;
+  document.getElementById("verse-banner").classList.toggle("hidden", text.trim().length === 0);
+  updateMastheadVisibility();
+});
 
 document.getElementById("panel-close").addEventListener("click", clearSelection);
 

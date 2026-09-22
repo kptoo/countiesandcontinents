@@ -504,6 +504,11 @@ function makeDraggable(panel, handle) {
     panelH = rect.height;
     panel.style.right = "auto";
     panel.style.bottom = "auto";
+    // #focus-stack starts centered via a CSS translate(-50%, -50%); left/top
+    // alone would then be applied on top of that shift and jump the card.
+    // rect.left/top already reflect the actual on-screen position with the
+    // transform included, so neutralizing it here keeps the position exact.
+    panel.style.transform = "none";
     e.preventDefault();
   });
 
@@ -529,6 +534,13 @@ function makeDraggable(panel, handle) {
 document.querySelectorAll(".list-panel").forEach((panel) => {
   makeDraggable(panel, panel.querySelector(".list-panel-drag"));
 });
+
+// The prayer/verse card has no drag handle of its own — the whole card is
+// draggable (see the pointer-events note on #focus-stack in the CSS).
+makeDraggable(
+  document.getElementById("focus-stack"),
+  document.getElementById("focus-stack")
+);
 
 // Each panel's text size is independent (counties and continents can be
 // sized differently) and lives on the <ul> itself, so every button in it

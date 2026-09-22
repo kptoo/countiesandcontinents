@@ -170,14 +170,21 @@ html, body{
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  pointer-events: none;
   background: #FFFFFF;
   border-radius: 14px;
   padding: 18px 32px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.45);
   text-align: center;
   max-width: min(85vw, 560px);
+  /* Draggable by grabbing anywhere on the card — there's nothing clickable
+     inside it (editing happens in the panel's text fields), so the whole
+     card can safely double as its own drag handle, no separate grip icon
+     needed. This does mean clicks on the map directly under the card no
+     longer pass through to it; drag the card aside if it's in the way. */
+  cursor: grab;
+  touch-action: none;
 }
+#focus-stack:active{ cursor: grabbing; }
 #focus-stack.hidden{ display: none; }
 
 #prayer-banner,

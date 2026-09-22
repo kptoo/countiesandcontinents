@@ -75,12 +75,16 @@ const globeMap = new maplibregl.Map({
   container: "globe",
   style: {
     version: 8,
+    // Setting it here as well as belt-and-suspenders: the style spec itself
+    // supports a top-level "projection" key, so the globe is already a
+    // sphere on the very first frame rather than starting flat and
+    // switching over once setProjection() below runs.
+    projection: { type: "globe" },
     sources: {},
     layers: [
       { id: "background", type: "background", paint: { "background-color": "#050A08" } }
     ]
   },
-  projection: { type: "globe" },
   center: [20, 5],
   zoom: 1.4,
   minZoom: 0.4,
@@ -90,10 +94,18 @@ const globeMap = new maplibregl.Map({
 });
 globeMap.addControl(new maplibregl.NavigationControl({ showCompass: true }), "bottom-right");
 
-// Atmosphere glow around the globe's limb. Purely decorative, so if this
-// ever throws on some future/older MapLibre version, the globe still works
-// fine without it.
+// The actual, load-bearing way to turn this into a sphere: MapLibre reads
+// projection from the style spec or from this runtime call, NOT from a
+// plain constructor option — a "projection" key passed alongside "style"
+// in the Map() options above is simply ignored, which was the bug in the
+// previous version of this file (it quietly rendered as a flat Mercator
+// map instead of a globe).
 globeMap.on("load", () => {
+  globeMap.setProjection({ type: "globe" });
+
+  // Atmosphere glow around the globe's limb. Purely decorative, so if this
+  // ever throws on some future/older MapLibre version, the globe still
+  // works fine without it.
   try {
     globeMap.setFog({
       range: [0.5, 10],

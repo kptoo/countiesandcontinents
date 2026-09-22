@@ -568,6 +568,19 @@ document.querySelectorAll(".font-btn").forEach((btn) => {
   });
 });
 
+// Prayer + verse text size — one scale factor (--focus-scale, set on
+// #focus-stack) that both the prayer line and the verse read their
+// font-size from in CSS, so a single pair of buttons resizes both at once
+// while keeping their relative sizes to each other unchanged.
+function adjustBannerScale(delta) {
+  const stack = document.getElementById("focus-stack");
+  const current = parseFloat(getComputedStyle(stack).getPropertyValue("--focus-scale")) || 1;
+  const next = Math.min(2, Math.max(0.6, Math.round((current + delta) * 100) / 100));
+  stack.style.setProperty("--focus-scale", next);
+}
+document.getElementById("banner-font-minus").addEventListener("click", () => adjustBannerScale(-0.1));
+document.getElementById("banner-font-plus").addEventListener("click", () => adjustBannerScale(0.1));
+
 // ---------------------------------------------------------------
 // 2D / 3D view switch
 // ---------------------------------------------------------------

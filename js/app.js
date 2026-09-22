@@ -12,7 +12,7 @@ const DATA_URLS = {
 // requests/month, no account needed. This key isn't a secret (it's served to
 // every visitor in the page source either way) — it just identifies your
 // usage against the free quota, so it's fine to commit as-is.
-const CARTO_API_KEY = "PASTE_YOUR_CARTO_API_KEY_HERE";
+const CARTO_API_KEY = "cb1_3trc_1_8ca6fe9392ca8689306a51e6";
 
 // Some browsers restore checkbox states from history on a reload without
 // firing a "change" event (e.g. after using the browser's back button or a

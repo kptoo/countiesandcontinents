@@ -43,7 +43,7 @@ const FILL_OPACITY = { county: 0.18, continent: 0.12, selected: 0.4 };
 // Which basemap is active, shared by both engines. CARTO needs the key
 // above; OpenStreetMap's standard tiles need no key at all, so it's the
 // zero-setup fallback if a key hasn't been filled in yet.
-let currentBasemap = "carto"; // "carto" | "osm"
+let currentBasemap = "carto"; // "carto" | "osm" | "esri"
 
 // ---------------------------------------------------------------
 // 2D map (Leaflet)
@@ -72,6 +72,14 @@ const cartoTiles = L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_nolabels/
 const osmTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   subdomains: "abc",
+  maxZoom: 19
+});
+// Real satellite/aerial photography — the closest free equivalent to what
+// Google Earth shows, rather than a rendered road-map style like the two
+// above. Note the {z}/{y}/{x} order: Esri's tile scheme swaps x and y
+// compared to the OSM/CARTO convention used everywhere else on this page.
+const esriTiles = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+  attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
   maxZoom: 19
 });
 cartoTiles.addTo(map);
@@ -582,31 +590,38 @@ document.getElementById("view-flat").addEventListener("click", () => setView("fl
 document.getElementById("view-globe").addEventListener("click", () => setView("globe"));
 
 // ---------------------------------------------------------------
-// Basemap switch — CARTO (needs the API key above) or OpenStreetMap's
-// standard tiles (no key needed at all). Applies to both engines at once,
-// since it's one "which tiles" choice rather than a per-view setting.
+// Basemap switch — CARTO (needs the API key above), OpenStreetMap's
+// standard tiles, or Esri satellite imagery (both need no key at all).
+// Applies to both engines at once, since it's one "which tiles" choice
+// rather than a per-view setting.
 // ---------------------------------------------------------------
+
+const LEAFLET_BASEMAPS = { carto: cartoTiles, osm: osmTiles, esri: esriTiles };
+const GLOBE_BASEMAP_LAYERS = ["basemap-carto", "basemap-osm", "basemap-esri"];
 
 function setBasemap(name) {
   currentBasemap = name;
   document.getElementById("basemap-carto").classList.toggle("active", name === "carto");
   document.getElementById("basemap-osm").classList.toggle("active", name === "osm");
+  document.getElementById("basemap-esri").classList.toggle("active", name === "esri");
 
-  if (name === "osm") {
-    if (map.hasLayer(cartoTiles)) map.removeLayer(cartoTiles);
-    if (!map.hasLayer(osmTiles)) osmTiles.addTo(map);
-  } else {
-    if (map.hasLayer(osmTiles)) map.removeLayer(osmTiles);
-    if (!map.hasLayer(cartoTiles)) cartoTiles.addTo(map);
-  }
+  Object.entries(LEAFLET_BASEMAPS).forEach(([key, layer]) => {
+    if (key === name) {
+      if (!map.hasLayer(layer)) layer.addTo(map);
+    } else if (map.hasLayer(layer)) {
+      map.removeLayer(layer);
+    }
+  });
 
-  if (globeMap.getLayer("basemap-carto") && globeMap.getLayer("basemap-osm")) {
-    globeMap.setLayoutProperty("basemap-carto", "visibility", name === "carto" ? "visible" : "none");
-    globeMap.setLayoutProperty("basemap-osm", "visibility", name === "osm" ? "visible" : "none");
+  if (globeMap.getLayer("basemap-carto")) {
+    GLOBE_BASEMAP_LAYERS.forEach((id) => {
+      globeMap.setLayoutProperty(id, "visibility", id === `basemap-${name}` ? "visible" : "none");
+    });
   }
 }
 document.getElementById("basemap-carto").addEventListener("click", () => setBasemap("carto"));
 document.getElementById("basemap-osm").addEventListener("click", () => setBasemap("osm"));
+document.getElementById("basemap-esri").addEventListener("click", () => setBasemap("esri"));
 
 // ---------------------------------------------------------------
 // A rough bounding-box center/zoom for a GeoJSON geometry, used to fly the
@@ -667,6 +682,14 @@ function setupGlobeLayers(countiesGeo, continentsGeo) {
     tileSize: 256,
     attribution: "&copy; OpenStreetMap contributors"
   });
+  // Esri's tile scheme swaps x and y ({z}/{y}/{x}) and doesn't shard across
+  // subdomains the way OSM/CARTO do, so this is just one URL template.
+  globeMap.addSource("basemap-esri-src", {
+    type: "raster",
+    tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+    tileSize: 256,
+    attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+  });
   globeMap.addLayer({
     id: "basemap-carto",
     type: "raster",
@@ -678,6 +701,12 @@ function setupGlobeLayers(countiesGeo, continentsGeo) {
     type: "raster",
     source: "basemap-osm-src",
     layout: { visibility: currentBasemap === "osm" ? "visible" : "none" }
+  });
+  globeMap.addLayer({
+    id: "basemap-esri",
+    type: "raster",
+    source: "basemap-esri-src",
+    layout: { visibility: currentBasemap === "esri" ? "visible" : "none" }
   });
 
   globeMap.addSource("continents", { type: "geojson", data: continentsGeo, generateId: true });

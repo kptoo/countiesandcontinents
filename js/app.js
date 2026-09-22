@@ -175,11 +175,11 @@ function updateFocusStack() {
   document.getElementById("masthead").classList.toggle("hidden", prayerShown || verseShown);
 }
 
-// The prayer line is driven by #prayer-input, live — typing in it (or
-// clicking a region, which fills it in) updates the banner immediately.
-// #toggle-prayer is an independent on/off switch: turning it off hides the
-// banner right away without touching the typed text or the map selection,
-// so it can be turned back on later, or the map can just be viewed plain.
+// #toggle-prayer is now the master on/off switch for the whole shared card
+// — prayer line AND verse together, since the two live in one draggable
+// card. Turning it off hides both at once without touching what's typed in
+// either field; turning it back on brings back whichever of the two
+// actually has text, so the map can be viewed plain in between.
 function updatePrayerDisplay() {
   const text = document.getElementById("prayer-input").value.trim();
   const on = document.getElementById("toggle-prayer").checked;
@@ -187,8 +187,16 @@ function updatePrayerDisplay() {
   document.getElementById("prayer-banner").classList.toggle("hidden", !(on && text.length > 0));
   updateFocusStack();
 }
+function updateVerseDisplay() {
+  const text = document.getElementById("verse-input").value;
+  const on = document.getElementById("toggle-prayer").checked;
+  document.getElementById("verse-text").textContent = text;
+  document.getElementById("verse-banner").classList.toggle("hidden", !(on && text.trim().length > 0));
+  updateFocusStack();
+}
 document.getElementById("prayer-input").addEventListener("input", updatePrayerDisplay);
 document.getElementById("toggle-prayer").addEventListener("change", updatePrayerDisplay);
+document.getElementById("toggle-prayer").addEventListener("change", updateVerseDisplay);
 
 // Marks the selected region's entry in whichever browsable list it belongs
 // to (counties or continents) with the same gold accent used to highlight
@@ -314,12 +322,7 @@ function openPanel(kicker, title, rows) {
 // county/continent selection so it can be shown on its own.
 // ---------------------------------------------------------------
 
-document.getElementById("verse-input").addEventListener("input", (e) => {
-  const text = e.target.value;
-  document.getElementById("verse-text").textContent = text;
-  document.getElementById("verse-banner").classList.toggle("hidden", text.trim().length === 0);
-  updateFocusStack();
-});
+document.getElementById("verse-input").addEventListener("input", updateVerseDisplay);
 
 document.getElementById("panel-close").addEventListener("click", clearSelection);
 

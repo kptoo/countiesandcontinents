@@ -16,20 +16,20 @@
 </head>
 <body>
 
-  <div id="map"></div>
-  <div id="globe" class="view-hidden"></div>
+  <div id="map" class="view-hidden"></div>
+  <div id="globe"></div>
 
   <div id="loading">Loading map data&hellip;</div>
 
   <div id="view-toggle" role="group" aria-label="Map view">
-    <button type="button" id="view-flat" class="view-btn active" aria-pressed="true">2D map</button>
-    <button type="button" id="view-globe" class="view-btn" aria-pressed="false">3D globe</button>
+    <button type="button" id="view-flat" class="view-btn" aria-pressed="false">2D map</button>
+    <button type="button" id="view-globe" class="view-btn active" aria-pressed="true">3D globe</button>
   </div>
 
   <div id="basemap-toggle" role="group" aria-label="Basemap">
-    <button type="button" id="basemap-carto" class="view-btn active" aria-pressed="true">CARTO</button>
+    <button type="button" id="basemap-carto" class="view-btn" aria-pressed="false">CARTO</button>
     <button type="button" id="basemap-osm" class="view-btn" aria-pressed="false" title="OpenStreetMap">OSM</button>
-    <button type="button" id="basemap-esri" class="view-btn" aria-pressed="false" title="Esri World Imagery — real satellite/aerial photography">Satellite</button>
+    <button type="button" id="basemap-esri" class="view-btn active" aria-pressed="true" title="Esri World Imagery — real satellite/aerial photography">Satellite</button>
   </div>
 
   <header id="masthead">

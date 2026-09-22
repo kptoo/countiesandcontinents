@@ -220,9 +220,8 @@ html, body{
 #verse-text{
   margin: 0;
   font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 500;
-  font-size: calc(21px * var(--focus-scale));
+  font-weight: 600;
+  font-size: calc(28px * var(--focus-scale));
   line-height: 1.45;
   color: #1B4B91;
   white-space: pre-line;

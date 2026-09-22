@@ -43,7 +43,7 @@ const FILL_OPACITY = { county: 0.18, continent: 0.12, selected: 0.4 };
 // Which basemap is active, shared by both engines. CARTO needs the key
 // above; OpenStreetMap's standard tiles need no key at all, so it's the
 // zero-setup fallback if a key hasn't been filled in yet.
-let currentBasemap = "carto"; // "carto" | "osm" | "esri"
+let currentBasemap = "esri"; // "carto" | "osm" | "esri"
 
 // ---------------------------------------------------------------
 // 2D map (Leaflet)
@@ -82,7 +82,7 @@ const esriTiles = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/servi
   attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
   maxZoom: 19
 });
-cartoTiles.addTo(map);
+esriTiles.addTo(map);
 
 // Two panes so Kenya's counties always draw above the continent fills,
 // and so a click on a county never also triggers the continent below it.

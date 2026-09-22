@@ -107,13 +107,13 @@ html, body{
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: #FFFFFF;
-  border-radius: 18px;
-  padding: 26px 44px;
+  border-radius: 14px;
+  padding: 16px 30px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.45);
   transition: opacity 0.25s ease, transform 0.25s ease;
-  max-width: min(88vw, 620px);
+  max-width: min(80vw, 480px);
   text-align: center;
   pointer-events: none;
 }
@@ -123,14 +123,14 @@ html, body{
 }
 .prayer-lead{
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
   color: #6B7873;
 }
 .prayer-name{
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 40px;
+  font-size: 28px;
   line-height: 1.15;
   color: #16241F;
   overflow-wrap: break-word;
@@ -327,11 +327,11 @@ html, body{
   #masthead{ top: 12px; left: 12px; }
   #masthead h1{ font-size: 14.5px; }
   #prayer-banner{
-    padding: 18px 24px;
-    border-radius: 14px;
+    padding: 12px 18px;
+    border-radius: 12px;
   }
-  .prayer-name{ font-size: 26px; }
-  .prayer-lead{ font-size: 12.5px; }
+  .prayer-name{ font-size: 19px; }
+  .prayer-lead{ font-size: 11px; }
   #layers-panel{
     top: auto; bottom: 12px; left: 12px; right: 12px;
     width: auto;

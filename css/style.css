@@ -138,12 +138,7 @@ html, body{
   padding-top: 10px;
 }
 
-.prayer-lead{
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 500;
-  color: #6B7873;
-}
+.prayer-lead,
 .prayer-name{
   font-family: var(--font-display);
   font-weight: 600;
@@ -159,7 +154,7 @@ html, body{
   font-weight: 500;
   font-size: 21px;
   line-height: 1.45;
-  color: #16241F;
+  color: #1B4B91;
   white-space: pre-line;
   overflow-wrap: break-word;
 }
@@ -393,8 +388,8 @@ html, body{
     padding: 12px 18px;
     border-radius: 12px;
   }
+  .prayer-lead,
   .prayer-name{ font-size: 19px; }
-  .prayer-lead{ font-size: 11px; }
   #verse-text{ font-size: 15px; }
   #layers-panel{
     top: auto; bottom: 12px; left: 12px; right: 12px;

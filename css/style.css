@@ -220,6 +220,7 @@ html, body{
 }
 .swatch-counties{ background: var(--counties); }
 .swatch-continents{ background: var(--continents); }
+.swatch-prayer{ background: var(--highlight); }
 .layer-name{
   font-size: 13.5px;
   flex: 1;
@@ -258,6 +259,22 @@ html, body{
   outline: 2px solid var(--highlight);
   outline-offset: 1px;
 }
+#prayer-input{
+  width: 100%;
+  background: #0F1D19;
+  color: var(--text);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 7px 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+#prayer-input::placeholder{ color: var(--text-muted); }
+#prayer-input:focus-visible{
+  outline: 2px solid var(--highlight);
+  outline-offset: 1px;
+}
+
 #verse-input{
   width: 100%;
   resize: vertical;

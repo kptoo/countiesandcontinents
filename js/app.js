@@ -90,14 +90,29 @@ function updateFocusStack() {
   document.getElementById("masthead").classList.toggle("hidden", prayerShown || verseShown);
 }
 
+// The prayer line is driven by #prayer-input, live — typing in it (or
+// clicking a region, which fills it in) updates the banner immediately.
+// #toggle-prayer is an independent on/off switch: turning it off hides the
+// banner right away without touching the typed text or the map selection,
+// so it can be turned back on later, or the map can just be viewed plain.
+function updatePrayerDisplay() {
+  const text = document.getElementById("prayer-input").value.trim();
+  const on = document.getElementById("toggle-prayer").checked;
+  document.getElementById("prayer-name").textContent = text;
+  document.getElementById("prayer-banner").classList.toggle("hidden", !(on && text.length > 0));
+  updateFocusStack();
+}
+document.getElementById("prayer-input").addEventListener("input", updatePrayerDisplay);
+document.getElementById("toggle-prayer").addEventListener("change", updatePrayerDisplay);
+
 function clearSelection() {
   if (selected) {
     selected.layer.setStyle(selected.baseStyle);
     selected = null;
   }
   document.getElementById("detail-panel").classList.add("hidden");
-  document.getElementById("prayer-banner").classList.add("hidden");
-  updateFocusStack();
+  document.getElementById("prayer-input").value = "";
+  updatePrayerDisplay();
 }
 
 function selectFeature(layer, baseStyleFn, kicker, title, rows) {
@@ -131,10 +146,10 @@ function openPanel(kicker, title, rows) {
   document.getElementById("detail-panel").classList.remove("hidden");
   document.getElementById("hint").classList.add("hidden");
 
-  // e.g. "Bomet county" or "Africa continent" — for display during prayer.
-  document.getElementById("prayer-name").textContent = `${title} ${kicker.toLowerCase()}`;
-  document.getElementById("prayer-banner").classList.remove("hidden");
-  updateFocusStack();
+  // Fills the editable prayer text in, e.g. "Bomet county" or "Africa
+  // continent" — the banner itself only shows if #toggle-prayer is on.
+  document.getElementById("prayer-input").value = `${title} ${kicker.toLowerCase()}`;
+  updatePrayerDisplay();
 }
 
 // ---------------------------------------------------------------

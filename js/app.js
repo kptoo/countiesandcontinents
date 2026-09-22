@@ -7,6 +7,13 @@ const DATA_URLS = {
   continents: "data/world_continents.geojson"
 };
 
+// CARTO now requires a free API key on basemap tile requests (since Aug 2026).
+// Get one at https://carto.com/basemaps/apikey — free tier covers 5M tile
+// requests/month, no account needed. This key isn't a secret (it's served to
+// every visitor in the page source either way) — it just identifies your
+// usage against the free quota, so it's fine to commit as-is.
+const CARTO_API_KEY = "cb1_3trc_1_8ca6fe9392ca8689306a51e6";
+
 const COLORS = {
   counties: "#E0A458",
   continents: "#5B8FC7",
@@ -27,7 +34,7 @@ const map = L.map("map", {
 
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png", {
+L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`, {
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
     '&copy; <a href="https://carto.com/attributions">CARTO</a>',
